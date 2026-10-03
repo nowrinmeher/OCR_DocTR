@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocTR AI OCR Studio - Interactive Word Detection & Recognition</title>
+  <meta name="description" content="State-of-the-art document OCR powered by docTR DBNet detection and CRNN recognition. Upload documents, detect words, and explore interactive bounding boxes with instant hover labels.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <!-- Global App Wrapper -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-icon-glow">
+            <i class="fa-solid fa-brain"></i>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title">
+              <span>DocTR</span> AI Studio
+              <span class="version-badge">v2.0</span>
+            </div>
+            <div class="brand-subtitle">Deep Word Detection & Recognition</div>
+          </div>
+        </div>
+        
+        <div class="model-tags-container">
+          <div class="model-chip detection-chip" title="Detection Backbone">
+            <i class="fa-solid fa-vector-square"></i>
+            <span>DBNet <strong>(ResNet50)</strong></span>
+          </div>
+          <div class="model-chip recognition-chip" title="Recognition Backbone">
+            <i class="fa-solid fa-spell-check"></i>
+            <span>CRNN <strong>(VGG16-BN)</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- System Status Pill -->
+        <div class="system-status-badge" id="systemStatusBadge" title="System Hardware Status">
+          <span class="status-pulse-dot"></span>
+          <span id="deviceStatusText"><i class="fa-solid fa-microchip"></i> Initializing...</span>
+        </div>
+
+        <!-- Quick Sample Document Dropdown/Buttons -->
+        <div class="sample-actions">
+          <span class="sample-label">Try Presets:</span>
+          <button class="btn btn-sm btn-outline" id="sampleInvoiceBtn" title="Load Corporate Invoice">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Invoice
+          </button>
+          <button class="btn btn-sm btn-outline" id="sampleReceiptBtn" title="Load Retail Receipt">
+            <i class="fa-solid fa-receipt"></i> Receipt
+          </button>
+        </div>
+
+        <!-- Theme & Layout Controls -->
+        <div class="header-actions">
+          <button class="icon-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <button class="icon-btn" id="fullscreenBtn" title="Toggle Fullscreen">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="main-workspace">
+      
+      <!-- Left Column: Document Canvas & Interactive Viewport -->
+      <section class="viewport-section">
+        
+        <!-- Viewport Top Control Bar -->
+        <div class="viewport-toolbar">
+          <div class="toolbar-group">
+            <label class="btn btn-primary btn-upload" id="uploadLabel">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Document</span>
+              <input type="file" id="fileInput" accept="image/*,application/pdf" hidden>
+            </label>
+            
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="wordSearchInput" placeholder="Search words in document..." class="search-field">
+              <span class="search-match-count" id="searchMatchCount"></span>
+              <button class="clear-search-btn" id="clearSearchBtn" title="Clear search">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Canvas Zoom & Display Controls -->
+          <div class="toolbar-group">
+            <div class="btn-group">
+              <button class="icon-btn" id="zoomOutBtn" title="Zoom Out (Ctrl -)">
+                <i class="fa-solid fa-magnifying-glass-minus"></i>
+              </button>
+              <span class="zoom-level-badge" id="zoomLevelDisplay">100%</span>
+              <button class="icon-btn" id="zoomInBtn" title="Zoom In (Ctrl +)">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+              </button>
+              <button class="icon-btn" id="zoomFitBtn" title="Fit to Viewport">
+                <i class="fa-solid fa-arrows-to-eye"></i>
+              </button>
+              <button class="icon-btn" id="zoomResetBtn" title="Reset Zoom">
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
+            </div>
+
+            <!-- Box Display Mode Toggle -->
+            <div class="dropdown-select-wrapper" title="Overlay Style">
+              <select id="boxModeSelect" class="custom-select">
+                <option value="hover-only">Hover Label Mode</option>
+                <option value="always-boxes">Highlight All Boxes</option>
+                <option value="compact">Solid Neon Tags</option>
+                <option value="clean">Hide Overlay</option>
+              </select>
+            </div>
+
+            <!-- Box Color Theme Switcher -->
+            <div class="color-picker-group" title="Box Color Scheme">
+              <button class="color-dot active" data-color="cyan" style="--c: #06b6d4;" title="Cyber Cyan"></button>
+              <button class="color-dot" data-color="emerald" style="--c: #10b981;" title="Emerald Glow"></button>
+              <button class="color-dot" data-color="violet" style="--c: #a855f7;" title="Electric Violet"></button>
+              <button class="color-dot" data-color="amber" style="--c: #f59e0b;" title="Sunset Amber"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Sub-bar: Confidence Filter & Multi-page Selector -->
+        <div class="viewport-filter-bar">
+          <div class="filter-item">
+            <span class="filter-label"><i class="fa-solid fa-sliders"></i> Min Confidence:</span>
+            <input type="range" id="confSlider" min="0" max="100" value="0" class="range-slider">
+            <span class="slider-value-pill" id="confSliderVal">0%</span>
+          </div>
+
+          <!-- Multi-page controls (active for PDFs) -->
+          <div class="pagination-wrapper" id="paginationWrapper" style="display: none;">
+            <button class="icon-btn btn-sm" id="prevPageBtn" title="Previous Page">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="page-indicator" id="pageIndicator">Page 1 / 1</span>
+            <button class="icon-btn btn-sm" id="nextPageBtn" title="Next Page">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <!-- Live Metrics HUD -->
+          <div class="live-metrics-hud" id="metricsHud" style="display: none;">
+            <div class="hud-item"><i class="fa-solid fa-font"></i> Words: <strong id="hudWordCount">0</strong></div>
+            <div class="hud-item"><i class="fa-solid fa-bullseye"></i> Avg Conf: <strong id="hudAvgConf">0%</strong></div>
+            <div class="hud-item"><i class="fa-solid fa-bolt"></i> Latency: <strong id="hudLatency">0ms</strong></div>
+          </div>
+        </div>
+
+        <!-- Canvas Stage Area (Scrollable & Pannable) -->
+        <div class="canvas-stage-wrapper" id="canvasStageWrapper">
+          
+          <!-- Empty State / Drag & Drop Hero Zone -->
+          <div class="upload-dropzone" id="dropZone">
+            <div class="dropzone-card">
+              <div class="dropzone-icon-ring">
+                <i class="fa-solid fa-file-arrow-up"></i>
+              </div>
+              <h3 class="dropzone-title">Upload Document or Image</h3>
+              <p class="dropzone-desc">
+                Drag and drop your PDF, PNG, JPG, or WEBP file here, or click to browse.
+              </p>
+              
+              <div class="dropzone-actions">
+                <button class="btn btn-primary" id="browseBtn">
+                  <i class="fa-solid fa-folder-open"></i> Browse Files
+                </button>
+              </div>
+
+              <div class="dropzone-footer">
+                <span class="badge-tag"><i class="fa-solid fa-check"></i> High-Precision DBNet Detection</span>
+                <span class="badge-tag"><i class="fa-solid fa-check"></i> Custom CRNN English Recognition</span>
+                <span class="badge-tag"><i class="fa-solid fa-check"></i> Interactive Hover Bounding Boxes</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading Spinner Overlay -->
+          <div class="processing-overlay" id="processingOverlay" style="display: none;">
+            <div class="loader-box">
+              <div class="scanner-anim-wrapper">
+                <div class="scan-laser-line"></div>
+                <div class="doc-icon-preview">
+                  <i class="fa-regular fa-file-lines"></i>
+                </div>
+              </div>
+              <h4 class="loader-title" id="loaderTitle">Executing Deep OCR Pipeline...</h4>
+              <p class="loader-desc" id="loaderDesc">Detecting word boundaries with DBNet & recognizing text with CRNN</p>
+              <div class="progress-bar-container">
+                <div class="progress-bar-glow" id="progressBar"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Canvas Presentation Layer -->
+          <div class="document-container" id="documentContainer" style="display: none;">
+            <div class="document-inner" id="documentInner">
+              <!-- Rendered Document Base Image -->
+              <img id="documentImage" alt="Document Page" class="document-image">
+              
+              <!-- SVG & HTML Overlay Layer for Interactive Bounding Boxes -->
+              <div id="overlayLayer" class="overlay-layer"></div>
+            </div>
+          </div>
+
+          <!-- Floating Interactive Word Tooltip -->
+          <div id="wordHoverTooltip" class="word-hover-tooltip" style="display: none;">
+            <div class="tooltip-header">
+              <span class="tooltip-label" id="tooltipWordValue">Text</span>
+              <span class="tooltip-conf-badge" id="tooltipConf">99.8%</span>
+            </div>
+            <div class="tooltip-coords" id="tooltipCoords">X: 120, Y: 450 | W: 85, H: 24</div>
+            <div class="tooltip-actions">
+              <span class="tooltip-hint"><i class="fa-regular fa-clipboard"></i> Click box to copy</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Right Column: Extracted Text, Word Inspector & Export Options -->
+      <aside class="inspector-section">
+        
+        <!-- Inspector Header & Tab Navigation -->
+        <div class="inspector-header">
+          <div class="tab-nav">
+            <button class="tab-btn active" data-tab="tab-text" id="tabBtnText">
+              <i class="fa-solid fa-align-left"></i> Transcribed Text
+            </button>
+            <button class="tab-btn" data-tab="tab-words" id="tabBtnWords">
+              <i class="fa-solid fa-boxes-stacked"></i> Word Cards (<span id="tabWordsCount">0</span>)
+            </button>
+            <button class="tab-btn" data-tab="tab-json" id="tabBtnJson">
+              <i class="fa-solid fa-code"></i> JSON Data
+            </button>
+            <button class="tab-btn" data-tab="tab-model" id="tabBtnModel">
+              <i class="fa-solid fa-circle-info"></i> Model Specs
+            </button>
+          </div>
+        </div>
+
+        <!-- Inspector Tab Content Panels -->
+        <div class="inspector-body">
+          
+          <!-- TAB 1: Transcribed Text Flow -->
+          <div class="tab-pane active" id="tab-text">
+            <div class="pane-action-bar">
+              <span class="pane-info-title"><i class="fa-solid fa-paragraph"></i> Document Lines</span>
+              <div class="action-buttons">
+                <button class="btn btn-xs btn-outline" id="copyTextBtn" title="Copy all text to clipboard">
+                  <i class="fa-regular fa-copy"></i> Copy Text
+                </button>
+                <button class="btn btn-xs btn-outline" id="downloadTxtBtn" title="Download text as .txt">
+                  <i class="fa-solid fa-download"></i> Download .txt
+                </button>
+              </div>
+            </div>
+            
+            <div class="transcription-flow" id="transcriptionFlow">
+              <div class="empty-tab-state">
+                <i class="fa-regular fa-file-lines"></i>
+                <p>Upload a document to view structured text transcription.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: Detailed Word Cards / Geometry List -->
+          <div class="tab-pane" id="tab-words">
+            <div class="pane-action-bar">
+              <div class="word-filter-box">
+                <input type="text" id="filterWordListInput" placeholder="Filter words..." class="filter-input-small">
+              </div>
+              <button class="btn btn-xs btn-outline" id="sortWordsBtn" title="Toggle Sort (Confidence / Position)">
+                <i class="fa-solid fa-arrow-down-wide-short"></i> Sort: Order
+              </button>
+            </div>
+
+            <div class="words-card-list" id="wordsCardList">
+              <div class="empty-tab-state">
+                <i class="fa-solid fa-cubes"></i>
+                <p>Individual word bounding boxes will appear here.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: Raw JSON Geometry & DocTR Output -->
+          <div class="tab-pane" id="tab-json">
+            <div class="pane-action-bar">
+              <span class="pane-info-title"><i class="fa-brands fa-square-js"></i> docTR Schema JSON</span>
+              <div class="action-buttons">
+                <button class="btn btn-xs btn-outline" id="copyJsonBtn">
+                  <i class="fa-regular fa-copy"></i> Copy JSON
+                </button>
+                <button class="btn btn-xs btn-outline" id="downloadJsonBtn">
+                  <i class="fa-solid fa-download"></i> Download .json
+                </button>
+              </div>
+            </div>
+            
+            <pre class="json-viewer-block"><code id="jsonCodeView">{ "status": "Ready for document upload" }</code></pre>
+          </div>
+
+          <!-- TAB 4: Model Specifications & Training Config -->
+          <div class="tab-pane" id="tab-model">
+            <div class="model-spec-card">
+              <div class="spec-header">
+                <i class="fa-solid fa-layer-group"></i>
+                <h4>Model Architecture Details</h4>
+              </div>
+              
+              <div class="spec-grid">
+                <div class="spec-item">
+                  <span class="spec-name">Word Detection Model</span>
+                  <span class="spec-val">DBNet (Differentiable Binarization)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Detection Backbone</span>
+                  <span class="spec-val highlight-blue">ResNet-50 Feature Pyramid</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Detection Checkpoint</span>
+                  <span class="spec-val font-mono">db_resnet50_best_V2.pt</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Recognition Model</span>
+                  <span class="spec-val">CRNN (Convolutional Recurrent Neural Network)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Recognition Backbone</span>
+                  <span class="spec-val highlight-purple">VGG-16 with Batch Normalization</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Recognition Checkpoint</span>
+                  <span class="spec-val font-mono">crnn_vgg16_bn_best_English.pt</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Vocabulary Size</span>
+                  <span class="spec-val highlight-green">170 Characters (Extended ASCII Latin-1)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Sequence Decoder</span>
+                  <span class="spec-val">CTC (Connectionist Temporal Classification)</span>
+                </div>
+                <div class="spec-item">
+                  <span class="spec-name">Runtime Acceleration</span>
+                  <span class="spec-val" id="specDeviceText">PyTorch with CUDA</span>
+                </div>
+              </div>
+
+              <div class="spec-tip-box">
+                <i class="fa-solid fa-circle-info"></i>
+                <p>Hover over any word box on the document viewport to inspect recognition labels and confidence metrics in real time.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </aside>
+
+    </main>
+
+    <!-- Global Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
